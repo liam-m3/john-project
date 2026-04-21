@@ -9,7 +9,7 @@ from flask_limiter.util import get_remote_address
 from apig_wsgi import make_lambda_handler
 
 app = Flask(__name__)
-CORS(app, origins=os.environ.get("ALLOWED_ORIGIN", "*"))
+CORS(app, origins=[os.environ["ALLOWED_ORIGIN"]])
 
 limiter = Limiter(app=app, key_func=get_remote_address)
 

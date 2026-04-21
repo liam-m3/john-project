@@ -360,18 +360,6 @@ body {
   margin-bottom: 1rem;
 }
 
-.best-value {
-  position: absolute;
-  top: 20px;
-  right: -30px;
-  background: var(--accent);
-  color: #ffffff;
-  padding: 0.5rem 2rem;
-  transform: rotate(45deg);
-  font-weight: bold;
-  font-size: 0.8rem;
-}
-
 .price-display {
   display: flex;
   align-items: flex-end;
@@ -568,10 +556,6 @@ body {
   background: var(--card);
   padding: 0 5px;
   color: var(--accent);
-}
-
-.validation-icon {
-  display: none;
 }
 
 .progress-container {
