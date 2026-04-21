@@ -1,0 +1,15 @@
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*~
+
+__pycache__/
+*.pyc
+.env
+.env.local
+
+.aws-sam/
+
+node_modules/
+*.log
