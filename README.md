@@ -1,6 +1,6 @@
 # GCSE Math Tutoring - Simplified
 
-A static marketing site for a GCSE maths tutoring service, with a small Python backend that collects inquiries from the contact form. Portfolio project — the tutor is fictional. Built to practise Python, AWS, and SQL in one place.
+A static marketing site for a GCSE maths tutor, with a small Python backend that collects inquiries from the contact form. Built as a client project — iterated with him through requirements and feedback over several rounds before he decided not to launch. The site and infrastructure are complete and deployed.
 
 ## Tech Stack
 
@@ -116,7 +116,6 @@ Run in Neon's SQL Editor, or with `psql` using the `DATABASE_URL`.
 
 ## What This Project Is NOT
 
-- Not a real tutoring business. The tutor is fictional.
 - Not multi-tenant — one form, one table, no user accounts.
-- No payment processing (the "Book a lesson" button links to a Stripe test URL).
+- No payment processing (the "Book a lesson" button links to a Stripe test URL — the client never moved to live keys).
 - No native mobile app, no real-time features.
