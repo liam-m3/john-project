@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: tutoring inquiry api
+
+Parameters:
+  DatabaseUrl:
+    Type: String
+    NoEcho: true
+  TurnstileSecret:
+    Type: String
+    NoEcho: true
+  AllowedOrigin:
+    Type: String
+
+Globals:
+  Function:
+    Runtime: python3.13
+    Architectures:
+      - arm64
+    Timeout: 10
+    MemorySize: 256
+
+Resources:
+  InquiryFn:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.handler
+      Environment:
+        Variables:
+          DATABASE_URL: !Ref DatabaseUrl
+          TURNSTILE_SECRET: !Ref TurnstileSecret
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+      Events:
+        PostInquiry:
+          Type: HttpApi
+          Properties:
+            Path: /inquiry
+            Method: post
+        Health:
+          Type: HttpApi
+          Properties:
+            Path: /health
+            Method: get
+
+Outputs:
+  ApiUrl:
+    Description: base url for the api
+    Value: !Sub 'https://${ServerlessHttpApi}.execute-api.${AWS::Region}.amazonaws.com'
