@@ -1,0 +1,6 @@
+Flask==3.0.3
+Flask-Cors==4.0.1
+Flask-Limiter==3.8.0
+psycopg2-binary==2.9.10
+requests==2.32.3
+apig-wsgi==2.18.0

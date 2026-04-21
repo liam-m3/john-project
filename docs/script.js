@@ -1,6 +1,5 @@
 const CONFIG = {
-  scriptURL:
-    "https://script.google.com/macros/s/AKfycbyZKtLzOASGEXHe__HAccni6lg-C37cujfreIA3BGUytq9xwXeen5xkheQ3ZUUfJeknjg/exec",
+  apiURL: "https://vas272pqy4.execute-api.eu-west-2.amazonaws.com/inquiry",
   emailJSKey: "R0Pu4Wojwu-6Z2RMd",
   emailJSTemplate: "template_k7g1gcm",
   emailJSService: "service_bpoo366",
@@ -79,22 +78,22 @@ async function handleFormSubmit(form) {
       phone: phone,
     });
 
-    const params = new URLSearchParams();
-    formData.forEach((value, key) => {
-      params.append(key, value);
-    });
-
-    params.append("sharedSecret", "MuDR8V4xZGfuVXFlgOmLWX9YQTotdz9b");
-
-    console.log("Submitting form data to:", CONFIG.scriptURL);
-
-    await fetch(CONFIG.scriptURL, {
+    const res = await fetch(CONFIG.apiURL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params.toString(),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        first_name: firstName,
+        last_name: lastName,
+        email: userEmail,
+        phone: phone,
+        turnstile_token: turnstileToken,
+      }),
     });
+
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || `api responded ${res.status}`);
+    }
 
     showThankYouMessage();
     return true;
