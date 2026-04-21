@@ -1,6 +1,6 @@
 # GCSE Math Tutoring - Simplified
 
-Marketing site for a GCSE maths tutor. I built it as a client project. We went through a few rounds of requirements and feedback before he decided not to launch. The site and backend are still complete and deployed.
+Marketing site for a GCSE maths tutor I built it as a client project. 
 
 When someone submits the contact form, Cloudflare Turnstile checks they're not a bot. The form data then gets posted to a Python Flask API on AWS Lambda. The API writes the inquiry into Postgres.
 
