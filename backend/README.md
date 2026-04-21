@@ -1,14 +1,14 @@
-# backend
+# Backend
 
 Flask api for the tutoring site contact form. Takes inquiries from the form, verifies Cloudflare Turnstile, and writes them to Postgres. Runs on AWS Lambda behind API Gateway.
 
-## stack
+## Stack
 
 - Python 3.12 + Flask
 - PostgreSQL (AWS RDS or any hosted Postgres)
 - AWS Lambda + API Gateway, deployed with SAM
 
-## setup
+## Setup
 
 Install deps:
 
@@ -28,7 +28,7 @@ Run locally:
 
     python app.py
 
-## deploy
+## Deploy
 
 Needs the AWS SAM CLI.
 
@@ -37,7 +37,7 @@ Needs the AWS SAM CLI.
 
 Fill in `DatabaseUrl`, `TurnstileSecret`, `AllowedOrigin` at the prompts. The api base url is printed at the end — append `/inquiry` and put it in `docs/script.js` as `CONFIG.apiURL`.
 
-## endpoint
+## Endpoint
 
     POST /inquiry
     Content-Type: application/json
@@ -52,7 +52,7 @@ Fill in `DatabaseUrl`, `TurnstileSecret`, `AllowedOrigin` at the prompts. The ap
 
 Returns `201 {"ok": true}` on success, `400 {"error": "..."}` on bad input or failed Turnstile. Rate limited to 5 requests per minute per IP.
 
-## notes
+## Notes
 
 - Rate limiter uses in-memory storage, which resets on Lambda cold starts. Fine for low traffic; swap for Redis if this ever matters.
 - New psycopg2 connection per request. Lambda concurrency is low so connection pooling isn't worth the code.
