@@ -19,6 +19,16 @@ Globals:
       - arm64
     Timeout: 10
     MemorySize: 256
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - !Ref AllowedOrigin
+      AllowHeaders:
+        - Content-Type
+      AllowMethods:
+        - POST
+        - GET
+        - OPTIONS
 
 Resources:
   InquiryFn:
