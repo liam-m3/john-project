@@ -2,12 +2,20 @@ const CONFIG = {
   apiURL: "https://vas272pqy4.execute-api.eu-west-2.amazonaws.com/inquiry",
 };
 
+function turnstileCallback(token) {
+  document.getElementById("turnstileToken").value = token;
+}
+
 function loadTurnstile() {
   const script = document.createElement("script");
   script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
   script.async = true;
   script.defer = true;
   document.head.appendChild(script);
+}
+
+function isMobile() {
+  return window.innerWidth <= 768;
 }
 
 function handleSmoothScroll(targetId) {
@@ -18,15 +26,10 @@ function handleSmoothScroll(targetId) {
   const extraOffset = targetId === "#about" ? 435 : 20;
 
   let targetPosition;
-  if (targetId === "#contact" && window.innerWidth <= 768) {
-    const contactSection = document.querySelector("#contact");
+  if (targetId === "#contact" && isMobile()) {
     const inquiryBox = document.querySelector(".inquiry-box");
-
-    if (contactSection && inquiryBox) {
-      const inquiryBoxRect = inquiryBox.getBoundingClientRect();
-      const inquiryBoxTop = inquiryBoxRect.top + window.pageYOffset;
-
-      targetPosition = inquiryBoxTop - 90;
+    if (inquiryBox) {
+      targetPosition = inquiryBox.getBoundingClientRect().top + window.pageYOffset - 90;
     } else {
       targetPosition = document.body.scrollHeight - window.innerHeight;
     }
@@ -38,10 +41,7 @@ function handleSmoothScroll(targetId) {
       extraOffset;
   }
 
-  window.scrollTo({
-    top: targetPosition,
-    behavior: "smooth",
-  });
+  window.scrollTo({ top: targetPosition, behavior: "smooth" });
 }
 
 async function handleFormSubmit(form) {
@@ -55,12 +55,7 @@ async function handleFormSubmit(form) {
   }
 
   try {
-    const firstName = formData.get("firstName");
-    const lastName = formData.get("lastName");
-    const userEmail = formData.get("email");
-    const phone = formData.get("phone").toString();
     const turnstileToken = formData.get("turnstileToken");
-
     if (!turnstileToken) {
       alert("Please complete the security check before submitting.");
       return false;
@@ -70,10 +65,10 @@ async function handleFormSubmit(form) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        first_name: firstName,
-        last_name: lastName,
-        email: userEmail,
-        phone: phone,
+        first_name: formData.get("firstName"),
+        last_name: formData.get("lastName"),
+        email: formData.get("email"),
+        phone: formData.get("phone").toString(),
         turnstile_token: turnstileToken,
       }),
     });
@@ -105,19 +100,6 @@ function showThankYouMessage() {
   setTimeout(() => {
     formElement.style.display = "none";
     thankYouElement.style.display = "block";
-    thankYouElement.style.textAlign = "center";
-
-    const elements = thankYouElement.querySelectorAll("h2, h3, p, li");
-    elements.forEach((el) => {
-      el.style.textAlign = "center";
-    });
-
-    const listItems = thankYouElement.querySelectorAll("li");
-    listItems.forEach((item) => {
-      item.style.listStyle = "none";
-      item.style.paddingLeft = "0";
-    });
-
     void thankYouElement.offsetWidth;
     thankYouElement.classList.add("visible");
   }, 300);
@@ -126,153 +108,97 @@ function showThankYouMessage() {
 function formatPhoneNumber(input) {
   let value = input.value.replace(/\D/g, "");
   if (value.length >= 10) {
-    value = value.slice(0, 10);
-    value = value.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+    value = value.slice(0, 10).replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
   }
   input.value = value;
 }
 
 function initializeAnimations() {
-  const fadeElements = document.querySelectorAll(".fade");
-
   const observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("in-view");
-        } else {
-          entry.target.classList.remove("in-view");
-        }
+        entry.target.classList.toggle("in-view", entry.isIntersecting);
       });
     },
-    {
-      threshold: 0.1,
-      rootMargin: "50px 0px",
-    }
+    { threshold: 0.1, rootMargin: "50px 0px" }
   );
-  fadeElements.forEach((el) => observer.observe(el));
+  document.querySelectorAll(".fade").forEach((el) => observer.observe(el));
 }
 
 function initializeFormValidation() {
-  const formFields = document.querySelectorAll(".form-control");
-
-  formFields.forEach((field) => {
-    if (field.value.trim() !== "") {
-      field.parentElement.classList.add("valid");
-    }
-
-    field.addEventListener("input", function () {
-      if (this.value.trim() !== "") {
-        this.parentElement.classList.add("valid");
-      } else {
-        this.parentElement.classList.remove("valid");
-      }
-
-      if (this.type === "email") {
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (emailPattern.test(this.value)) {
-          this.parentElement.classList.add("valid");
-        } else {
-          this.parentElement.classList.remove("valid");
-        }
-      }
-
-      if (this.type === "tel") {
-        const phonePattern = /^[0-9\+\-\s]+$/;
-        if (phonePattern.test(this.value) && this.value.length >= 10) {
-          this.parentElement.classList.add("valid");
-        } else {
-          this.parentElement.classList.remove("valid");
-        }
-      }
-    });
-
-    field.addEventListener("focus", function () {
-      this.parentElement.classList.add("focused");
-    });
-
-    field.addEventListener("blur", function () {
-      this.parentElement.classList.remove("focused");
-      if (this.value.trim() !== "") {
-        this.parentElement.classList.add("valid");
-      } else {
-        this.parentElement.classList.remove("valid");
-      }
-    });
+  document.querySelectorAll(".form-control").forEach((field) => {
+    const markValid = () => field.parentElement.classList.toggle("valid", field.value.trim() !== "");
+    markValid();
+    field.addEventListener("input", markValid);
+    field.addEventListener("blur", markValid);
+    field.addEventListener("focus", () => field.parentElement.classList.add("focused"));
   });
 }
 
-function isMobileOrTablet() {
-  return window.innerWidth <= 1024;
+function slideToIcon(textEl, iconEl) {
+  if (textEl) {
+    textEl.style.transform = "translateY(-100%)";
+    textEl.style.opacity = "0";
+  }
+  if (iconEl) {
+    iconEl.style.transform = "translateY(0)";
+    iconEl.style.opacity = "1";
+  }
+}
+
+function resetButton(textEl, iconEl) {
+  if (textEl) {
+    textEl.style.transform = "translateY(0)";
+    textEl.style.opacity = "1";
+  }
+  if (iconEl) {
+    iconEl.style.transform = "translateY(100%)";
+    iconEl.style.opacity = "0";
+  }
+}
+
+function followLink(anchor) {
+  const href = anchor.getAttribute("href");
+  const download = anchor.getAttribute("download");
+  const target = anchor.getAttribute("target");
+
+  if (download) {
+    const link = document.createElement("a");
+    link.href = href;
+    link.download = download;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } else if (target === "_blank") {
+    window.open(href, "_blank");
+  } else {
+    window.location.href = href;
+  }
 }
 
 function handleButtonClick(e, button, actionFunction) {
   e.preventDefault();
 
-  const textElement =
-    button.querySelector(".button-text") ||
-    button.querySelector(".submit-text");
-  const iconElement =
-    button.querySelector(".button-icon") ||
-    button.querySelector(".submit-icon");
+  const textEl = button.querySelector(".button-text") || button.querySelector(".submit-text");
+  const iconEl = button.querySelector(".button-icon") || button.querySelector(".submit-icon");
 
-  if (isMobileOrTablet()) {
+  const runAction = () => {
     if (actionFunction) {
       actionFunction(button);
     } else if (button.tagName === "A") {
-      const originalHref = button.getAttribute("href");
-      const originalDownload = button.getAttribute("download");
-      const originalTarget = button.getAttribute("target");
-
-      if (originalDownload) {
-        const link = document.createElement("a");
-        link.href = originalHref;
-        link.download = originalDownload || "";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else if (originalTarget === "_blank") {
-        window.open(originalHref, "_blank");
-      } else {
-        window.location.href = originalHref;
-      }
+      followLink(button);
     }
+  };
+
+  if (isMobile()) {
+    runAction();
     return;
   }
 
-  if (textElement) textElement.style.transform = "translateY(-100%)";
-  if (textElement) textElement.style.opacity = "0";
-  if (iconElement) iconElement.style.transform = "translateY(0)";
-  if (iconElement) iconElement.style.opacity = "1";
-
+  slideToIcon(textEl, iconEl);
   setTimeout(() => {
-    if (actionFunction) {
-      actionFunction(button);
-    } else if (button.tagName === "A") {
-      const originalHref = button.getAttribute("href");
-      const originalDownload = button.getAttribute("download");
-      const originalTarget = button.getAttribute("target");
-
-      if (originalDownload) {
-        const link = document.createElement("a");
-        link.href = originalHref;
-        link.download = originalDownload || "";
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } else if (originalTarget === "_blank") {
-        window.open(originalHref, "_blank");
-      } else {
-        window.location.href = originalHref;
-      }
-    }
-
-    setTimeout(() => {
-      if (textElement) textElement.style.transform = "translateY(0)";
-      if (textElement) textElement.style.opacity = "1";
-      if (iconElement) iconElement.style.transform = "translateY(100%)";
-      if (iconElement) iconElement.style.opacity = "0";
-    }, 500);
+    runAction();
+    setTimeout(() => resetButton(textEl, iconEl), 500);
   }, 300);
 }
 
@@ -286,35 +212,21 @@ document.addEventListener("DOMContentLoaded", function () {
     contactForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const submitBtn = contactForm.querySelector(".submit-btn");
+      const textEl = submitBtn?.querySelector(".submit-text");
+      const iconEl = submitBtn?.querySelector(".submit-icon");
 
-      if (submitBtn) {
-        const textElement = submitBtn.querySelector(".submit-text");
-        const iconElement = submitBtn.querySelector(".submit-icon");
-
-        if (isMobileOrTablet()) {
-          const success = await handleFormSubmit(e.target);
-          return;
-        }
-
-        if (textElement) textElement.style.transform = "translateY(-100%)";
-        if (textElement) textElement.style.opacity = "0";
-        if (iconElement) iconElement.style.transform = "translateY(0)";
-        if (iconElement) iconElement.style.opacity = "1";
-
-        setTimeout(async () => {
-          const success = await handleFormSubmit(e.target);
-          if (!success) {
-            setTimeout(() => {
-              if (textElement) textElement.style.transform = "translateY(0)";
-              if (textElement) textElement.style.opacity = "1";
-              if (iconElement) iconElement.style.transform = "translateY(100%)";
-              if (iconElement) iconElement.style.opacity = "0";
-            }, 500);
-          }
-        }, 300);
-      } else {
+      if (isMobile() || !submitBtn) {
         await handleFormSubmit(e.target);
+        return;
       }
+
+      slideToIcon(textEl, iconEl);
+      setTimeout(async () => {
+        const success = await handleFormSubmit(e.target);
+        if (!success) {
+          setTimeout(() => resetButton(textEl, iconEl), 500);
+        }
+      }, 300);
     });
 
     const phoneInput = contactForm.querySelector('input[name="phone"]');
@@ -333,12 +245,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function setupButtonAction(buttonSelector, actionFunction) {
-    const buttons = document.querySelectorAll(buttonSelector);
-
-    buttons.forEach((button) => {
-      button.addEventListener("click", function (e) {
-        handleButtonClick(e, button, actionFunction);
-      });
+    document.querySelectorAll(buttonSelector).forEach((button) => {
+      button.addEventListener("click", (e) => handleButtonClick(e, button, actionFunction));
     });
   }
 
@@ -347,30 +255,17 @@ document.addEventListener("DOMContentLoaded", function () {
   setupButtonAction(".submit-btn", function (button) {
     const form = button.closest("form");
     if (form) {
-      const submitEvent = new Event("submit", {
-        bubbles: true,
-        cancelable: true,
-      });
-      form.dispatchEvent(submitEvent);
+      form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
     }
   });
 
   window.addEventListener("resize", function () {
     document
-      .querySelectorAll(
-        ".button-text, .button-icon, .submit-text, .submit-icon"
-      )
+      .querySelectorAll(".button-text, .button-icon, .submit-text, .submit-icon")
       .forEach((el) => {
-        if (
-          el.classList.contains("button-text") ||
-          el.classList.contains("submit-text")
-        ) {
-          el.style.transform = "translateY(0)";
-          el.style.opacity = "1";
-        } else {
-          el.style.transform = "translateY(100%)";
-          el.style.opacity = "0";
-        }
+        const isText = el.classList.contains("button-text") || el.classList.contains("submit-text");
+        el.style.transform = isText ? "translateY(0)" : "translateY(100%)";
+        el.style.opacity = isText ? "1" : "0";
       });
   });
 
