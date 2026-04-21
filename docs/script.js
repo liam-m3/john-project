@@ -1,11 +1,6 @@
 const CONFIG = {
   apiURL: "https://vas272pqy4.execute-api.eu-west-2.amazonaws.com/inquiry",
-  emailJSKey: "R0Pu4Wojwu-6Z2RMd",
-  emailJSTemplate: "template_k7g1gcm",
-  emailJSService: "service_bpoo366",
 };
-
-emailjs.init(CONFIG.emailJSKey);
 
 function loadTurnstile() {
   const script = document.createElement("script");
@@ -64,19 +59,12 @@ async function handleFormSubmit(form) {
     const lastName = formData.get("lastName");
     const userEmail = formData.get("email");
     const phone = formData.get("phone").toString();
-    const fullName = `${firstName} ${lastName}`;
     const turnstileToken = formData.get("turnstileToken");
 
     if (!turnstileToken) {
       alert("Please complete the security check before submitting.");
       return false;
     }
-
-    await emailjs.send(CONFIG.emailJSService, CONFIG.emailJSTemplate, {
-      name: fullName,
-      user_email: userEmail,
-      phone: phone,
-    });
 
     const res = await fetch(CONFIG.apiURL, {
       method: "POST",
